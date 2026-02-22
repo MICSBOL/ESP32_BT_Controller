@@ -138,7 +138,7 @@ static void readDebugFromSerial() {
 void sendConfigTelemetry() {
 
   const char* plotNames[] = { "Volts", "Amps", "RPMs" };
-  const char* panelNames[] = { "Left", "Right" };
+  const char* panelNames[] = { "Temp °C", "Speed(m/s)" };
   const char* indicatorNames[] = { "Throttle", "Battery" };
 
   const uint8_t plotCount = 3;
@@ -264,7 +264,7 @@ void sendTelemetryIfDue() {
     panelPacket.header2 = 0x11;
     panelPacket.leftPanelValue = pendingL;
     panelPacket.rightPanelValue = pendingR;
-    panelPacket.panelStates = 0x07;
+    panelPacket.panelStates = 0b00001111;
     computeChecksum(&panelPacket, PANEL_PACKET_SIZE);
     SerialBT.write((byte*)&panelPacket, PANEL_PACKET_SIZE);
     lastPanelTx = now;
