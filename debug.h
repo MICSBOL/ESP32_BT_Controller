@@ -20,9 +20,6 @@
 #include "packets.h"
 #include "debug_config.h"
 
-void printPanelPacket();
-void printIndicatorPacket();
-
 #if DBG_STICKS
 void debugStickLX();
 void debugStickLY();

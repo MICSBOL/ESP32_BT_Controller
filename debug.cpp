@@ -110,6 +110,8 @@ void debugSwitches() {
 }
 #endif
 
+/* ---------- EVENTS ---------- */
+#if DBG_EVENTS
 void printEventPacketOnPress() {
   uint8_t v = rcEventPacket.data.eventId;
 
@@ -125,40 +127,5 @@ void printEventPacketOnPress() {
   Serial.println("----------------------------");
 
 }
+#endif
 
-// ----------------------------------------------------
-// printPanelPacket()
-// Imprime telemetría de panel
-// ----------------------------------------------------
-void printPanelPacket() {
-
-  Serial.println("\n--- PANEL TELEMETRY ---");
-
-  Serial.printf("Left: %u  Right: %u\n",
-                panelPacket.leftPanelValue,
-                panelPacket.rightPanelValue);
-  // Valores del display
-
-  Serial.printf("States: 0x%02X\n", panelPacket.panelStates);
-  // Estados de LEDs
-
-  Serial.printf("Checksum: %u\n", panelPacket.checksum);
-}
-
-
-// ----------------------------------------------------
-// printIndicatorPacket()
-// Imprime indicadores
-// ----------------------------------------------------
-void printIndicatorPacket() {
-
-  Serial.println("\n--- INDICATOR TELEMETRY ---");
-
-  Serial.printf("Analog: %u\n", indicatorPacket.analogValue);
-  // Sensor analógico
-
-  Serial.printf("Battery: %u%%\n", indicatorPacket.batteryLevel);
-  // Nivel de batería
-
-  Serial.printf("Checksum: %u\n", indicatorPacket.checksum);
-}
