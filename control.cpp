@@ -149,14 +149,12 @@
 #define PIN_BUZZER   27   // Buzzer (PWM)
 
 /* -------- SWITCH DIGITAL OUTPUTS -------- */
-#define PIN_SW1  32
-#define PIN_SW2  33
+#define PIN_SW1  12
+#define PIN_SW2  13
 #define PIN_SW3  25
 #define PIN_SW4  26
 #define PIN_SW5   4
 #define PIN_SW6   5
-#define PIN_SW7  12
-#define PIN_SW8  13
 
 /* -------- EVENT DIGITAL OUTPUTS -------- */
 #define PIN_EVT1 14
@@ -205,8 +203,6 @@ void controlInit() {
   pinMode(PIN_SW4, OUTPUT);
   pinMode(PIN_SW5, OUTPUT);
   pinMode(PIN_SW6, OUTPUT);
-  pinMode(PIN_SW7, OUTPUT);
-  pinMode(PIN_SW8, OUTPUT);
 
   // Event outputs
   pinMode(PIN_EVT1, OUTPUT);
@@ -259,8 +255,6 @@ void controlUpdate() {
   digitalWrite(PIN_SW4, sw & (1 << 3));
   digitalWrite(PIN_SW5, sw & (1 << 4));
   digitalWrite(PIN_SW6, sw & (1 << 5));
-  digitalWrite(PIN_SW7, sw & (1 << 6));
-  digitalWrite(PIN_SW8, sw & (1 << 7));
 }
 
 /* =====================================================

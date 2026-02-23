@@ -5,6 +5,7 @@
 #define PIN_D0   0
 #define PIN_D16  16
 #define PIN_D17  17
+#define PIN_A32  32
 #define PIN_A34  34
 #define PIN_A35  35
 #define PIN_A36  36

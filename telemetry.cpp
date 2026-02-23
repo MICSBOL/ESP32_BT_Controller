@@ -3,15 +3,18 @@
   ------------------------------------------------------
   Implements all telemetry packet generators.
 
-  ... This module is WRITE-ONLY.
+  This module is WRITE-ONLY.
+  It builds packets and sends them via Bluetooth.
+  It does NOT decide where data comes from.
 */
 
 #include <Arduino.h>
 #include <string.h>
+
 #include "bluetooth.h"
 #include "packets.h"
 #include "telemetry.h"
-#include "pins.h"
+#include "telemetry_source.h"
 #include "debug_config.h"
 
 /* =====================================================
@@ -19,146 +22,54 @@
    ===================================================== */
 
 const unsigned long indicatorInterval = 500;
-const unsigned long plotInterval = 50;
-const unsigned long resendWindow = 300;
-const unsigned long resendInterval = 100;
+const unsigned long plotInterval      = 50;
+const unsigned long resendWindow      = 300;
+const unsigned long resendInterval    = 100;
 
 /* =====================================================
    STATE
    ===================================================== */
+
 static unsigned long lastIndicatorSend = 0;
-static unsigned long lastPlotSend = 0;
+static unsigned long lastPlotSend      = 0;
+
 static uint16_t lastPanelL = 0;
 static uint16_t lastPanelR = 0;
+
 static uint16_t pendingL = 0;
 static uint16_t pendingR = 0;
+
 static unsigned long panelRetryUntil = 0;
-static unsigned long lastPanelTx = 0;
+static unsigned long lastPanelTx     = 0;
 
 static bool configSent = false;
 
 /* =====================================================
-   DEBUG VALUES
-   ===================================================== */
-#if TELEMETRY_DEBUG_MODE == DBG_PANEL
-static uint16_t dbgLeft = 0;
-static uint16_t dbgRight = 0;
-#endif
-
-#if TELEMETRY_DEBUG_MODE == DBG_INDICATOR
-static uint8_t dbgIndicatorValue = 0;
-static uint8_t dbgBatteryValue = 0;
-#endif
-
-#if TELEMETRY_DEBUG_MODE == DBG_PLOT
-static uint8_t dbgPlot1 = 0;
-static uint8_t dbgPlot2 = 0;
-static uint8_t dbgPlot3 = 0;
-#endif
-
-/* =====================================================
-   HELPERS
-   ===================================================== */
-static bool panelChanged(uint16_t l, uint16_t r) {
-  return (l != lastPanelL || r != lastPanelR);
-}
-
-static void computeChecksum(void* pkt, uint8_t size) {
-  byte* b = (byte*)pkt;
-  byte c = 0;
-  for (int i = 2; i < size - 1; i++)
-    c += b[i];
-  b[size - 1] = c;
-}
-
-/* =====================================================
-   REAL SENSOR READERS
-   ===================================================== */
-static uint8_t readRealPlot1() {
-  return map(analogRead(34), 0, 4095, 0, 255);
-}
-static uint8_t readRealPlot2() {
-  return map(analogRead(35), 0, 4095, 0, 255);
-}
-static uint8_t readRealPlot3() {
-  return map(analogRead(32), 0, 4095, 0, 255);
-}
-
-/* =====================================================
-   SERIAL DEBUG INPUT
-   ===================================================== */
-#if TELEMETRY_DEBUG_MODE != DBG_NONE
-static void readDebugFromSerial() {
-  if (!Serial.available())
-    return;
-
-  String line = Serial.readStringUntil('\n');
-  line.trim();
-
-#if TELEMETRY_DEBUG_MODE == DBG_PANEL
-  int comma = line.indexOf(',');
-  if (comma < 0) return;
-  int l = line.substring(0, comma).toInt();
-  int r = line.substring(comma + 1).toInt();
-  if (l >= 0 && l <= 9999 && r >= 0 && r <= 9999) {
-    dbgLeft = l;
-    dbgRight = r;
-  }
-
-#elif TELEMETRY_DEBUG_MODE == DBG_INDICATOR
-  int comma = line.indexOf(',');
-  if (comma < 0) return;
-  int a = line.substring(0, comma).toInt();
-  int b = line.substring(comma + 1).toInt();
-  if (a >= 0 && a <= 100 && b >= 0 && b <= 100) {
-    dbgIndicatorValue = a;
-    dbgBatteryValue = b;
-  }
-
-#elif TELEMETRY_DEBUG_MODE == DBG_PLOT
-  int c1 = line.indexOf(',');
-  int c2 = line.lastIndexOf(',');
-  if (c1 < 0 || c2 <= c1) return;
-  int v1 = line.substring(0, c1).toInt();
-  int v2 = line.substring(c1 + 1, c2).toInt();
-  int v3 = line.substring(c2 + 1).toInt();
-  if (v1 >= 0 && v1 <= 255 && v2 >= 0 && v2 <= 255 && v3 >= 0 && v3 <= 255) {
-    dbgPlot1 = v1;
-    dbgPlot2 = v2;
-    dbgPlot3 = v3;
-  }
-#endif
-}
-#endif
-
-/* =====================================================
-   CONFIG TELEMETRY
+   CONFIG LABELS
    ===================================================== */
 
 void sendConfigTelemetry() {
 
-  const char* plotNames[] = { "Volts", "Amps", "RPMs" };
-  const char* panelNames[] = { "Temp °C", "Speed(m/s)" };
+  const char* plotNames[]      = { "Volts", "Amps", "RPMs" };
+  const char* panelNames[]     = { "Left", "Right" };
   const char* indicatorNames[] = { "Throttle", "Battery" };
 
-  const uint8_t plotCount = 3;
-  const uint8_t panelCount = 2;
+  const uint8_t plotCount      = 3;
+  const uint8_t panelCount     = 2;
   const uint8_t indicatorCount = 2;
 
   byte buf[200];
   int idx = 0;
 
-  // ---------- HEADER ----------
   buf[idx++] = 0xCC;
   buf[idx++] = 0x44;
 
-  // Reserve space for payload length (we fill later)
-  int lengthIndex = idx++;
-  
-  // ---------- PAYLOAD START ----------
-  int payloadStart = idx;
+  // reserve space for length (2 bytes)
+  int lengthIndex = idx;
+  buf[idx++] = 0;
+  buf[idx++] = 0;
 
-  buf[idx++] = 3;  // number of sections
+  buf[idx++] = 3; // number of sections
 
   // ---------- PLOT SECTION ----------
   buf[idx++] = 0x01;
@@ -193,33 +104,52 @@ void sendConfigTelemetry() {
     idx += len;
   }
 
-  // ---------- CHECKSUM ----------
+  // Compute payload length (everything after header+length until checksum)
+  uint16_t payloadLength = idx - 4;
+  buf[lengthIndex]     = payloadLength & 0xFF;
+  buf[lengthIndex + 1] = (payloadLength >> 8) & 0xFF;
+
+  // Compute checksum (from byte 2 to last payload byte)
   uint8_t checksum = 0;
-  for (int i = payloadStart; i < idx; i++)
+  for (int i = 2; i < idx; i++)
     checksum += buf[i];
 
   buf[idx++] = checksum;
 
-  // ---------- FILL LENGTH ----------
-  uint8_t payloadLength = idx - payloadStart;
-  buf[lengthIndex] = payloadLength;
-
   if (SerialBT.hasClient()) {
-    Serial.println("Config packet sent with length framing.");
+    Serial.println("Telemetry config sent...");
     SerialBT.write(buf, idx);
   }
 }
 
+/* =====================================================
+   HELPER
+   ===================================================== */
+
+static bool panelChanged(uint16_t l, uint16_t r) {
+  return (l != lastPanelL || r != lastPanelR);
+}
+
+static void computeChecksum(void* pkt, uint8_t size) {
+  byte* b = (byte*)pkt;
+  byte c = 0;
+  for (int i = 2; i < size - 1; i++)
+    c += b[i];
+  b[size - 1] = c;
+}
 
 /* =====================================================
    MAIN TELEMETRY LOOP
    ===================================================== */
+
 void sendTelemetryIfDue() {
 
+  // Handle connection state
   if (!SerialBT.hasClient()) {
-    configSent = false;  // allow resend if reconnect happens
+    configSent = false;
     return;
   }
+
   // Send config once after connection
   if (!configSent) {
     sendConfigTelemetry();
@@ -228,27 +158,13 @@ void sendTelemetryIfDue() {
 
   unsigned long t = millis();
 
-#if TELEMETRY_DEBUG_MODE != DBG_NONE
-  readDebugFromSerial();
-#endif
+  // Update debug input if active
+  telemetrySourceUpdate();
 
   /* ---------- PANEL ---------- */
 
-  uint16_t newL, newR;
-
-#if TELEMETRY_DEBUG_MODE == DBG_PANEL
-  newL = dbgLeft;
-  newR = dbgRight;
-
-#elif TELEMETRY_DEBUG_MODE == DBG_PLOT
-  // FIXED VALUES during plot debug
-  newL = 0;
-  newR = 0;
-
-#else
-  newL = map(analogRead(PIN_A34), 0, 4095, 0, 9999);
-  newR = map(analogRead(PIN_A35), 0, 4095, 0, 9999);
-#endif
+  uint16_t newL = getPanelLeft();
+  uint16_t newR = getPanelRight();
 
   unsigned long now = millis();
 
@@ -260,13 +176,16 @@ void sendTelemetryIfDue() {
   }
 
   if (now < panelRetryUntil && now - lastPanelTx >= resendInterval) {
+
     panelPacket.header1 = 0xCC;
     panelPacket.header2 = 0x11;
-    panelPacket.leftPanelValue = pendingL;
+    panelPacket.leftPanelValue  = pendingL;
     panelPacket.rightPanelValue = pendingR;
-    panelPacket.panelStates = 0b00001111;
+    panelPacket.panelStates     = 0b00000111; // example state bits
+
     computeChecksum(&panelPacket, PANEL_PACKET_SIZE);
     SerialBT.write((byte*)&panelPacket, PANEL_PACKET_SIZE);
+
     lastPanelTx = now;
   }
 
@@ -285,19 +204,8 @@ void sendTelemetryIfDue() {
     indicatorPacket.header1 = 0xCC;
     indicatorPacket.header2 = 0x22;
 
-#if TELEMETRY_DEBUG_MODE == DBG_INDICATOR
-    indicatorPacket.analogValue = dbgIndicatorValue;
-    indicatorPacket.batteryLevel = dbgBatteryValue;
-
-#elif TELEMETRY_DEBUG_MODE == DBG_PLOT
-    // FIXED VALUES during plot debug
-    indicatorPacket.analogValue = 50;
-    indicatorPacket.batteryLevel = 75;
-
-#else
-    indicatorPacket.analogValue = map(analogRead(PIN_A36), 0, 4095, 0, 100);
-    indicatorPacket.batteryLevel = map(analogRead(PIN_A39), 0, 4095, 0, 100);
-#endif
+    indicatorPacket.analogValue  = getIndicatorAnalog();
+    indicatorPacket.batteryLevel = getIndicatorBattery();
 
     computeChecksum(&indicatorPacket, INDICATOR_PACKET_SIZE);
     SerialBT.write((byte*)&indicatorPacket, INDICATOR_PACKET_SIZE);
@@ -309,19 +217,12 @@ void sendTelemetryIfDue() {
 
     lastPlotSend = t;
 
-    uint8_t v1, v2, v3;
-
-#if TELEMETRY_DEBUG_MODE == DBG_PLOT
-    v1 = dbgPlot1;
-    v2 = dbgPlot2;
-    v3 = dbgPlot3;
-#else
-    v1 = readRealPlot1();
-    v2 = readRealPlot2();
-    v3 = readRealPlot3();
-#endif
+    uint8_t v1 = getPlot1();
+    uint8_t v2 = getPlot2();
+    uint8_t v3 = getPlot3();
 
     plotPacket = { 0xCC, 0x33, 3, v1, v2, v3, 0 };
+
     computeChecksum(&plotPacket, PLOT_PACKET_SIZE);
     SerialBT.write((byte*)&plotPacket, PLOT_PACKET_SIZE);
   }
