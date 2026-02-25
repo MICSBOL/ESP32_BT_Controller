@@ -43,3 +43,18 @@ void inputUpdate() {
 
   SerialBT.write((byte*)&inputPacket, INPUT_PACKET_SIZE);
 }
+
+uint8_t getDigitalInputsMask() {
+    uint8_t mask = 0;
+
+    if (digitalRead(PIN_D1)) mask |= (1 << 0);
+    if (digitalRead(PIN_D2)) mask |= (1 << 1);
+    if (digitalRead(PIN_D3)) mask |= (1 << 2);
+    if (digitalRead(PIN_D4)) mask |= (1 << 3);
+    if (digitalRead(PIN_D5)) mask |= (1 << 4);
+    if (digitalRead(PIN_D6)) mask |= (1 << 5);
+    if (digitalRead(PIN_D7)) mask |= (1 << 6);
+    if (digitalRead(PIN_D8)) mask |= (1 << 7);
+
+    return mask;
+}

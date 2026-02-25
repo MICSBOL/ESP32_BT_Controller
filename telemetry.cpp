@@ -206,6 +206,7 @@ void sendTelemetryIfDue() {
 
     indicatorPacket.analogValue = getIndicatorAnalog();
     indicatorPacket.batteryLevel = getIndicatorBattery();
+    indicatorPacket.digitalMask  = getIndicatorDigitalMask();
 
     computeChecksum(&indicatorPacket, INDICATOR_PACKET_SIZE);
     SerialBT.write((byte*)&indicatorPacket, INDICATOR_PACKET_SIZE);

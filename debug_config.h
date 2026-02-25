@@ -30,6 +30,6 @@
 #define DBG_PLOT        3
 
 // Select exactly one telemetry mode:
-#define TELEMETRY_DEBUG_MODE DBG_PANEL
+#define TELEMETRY_DEBUG_MODE DBG_INDICATOR
 
 #endif

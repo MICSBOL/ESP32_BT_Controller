@@ -74,7 +74,7 @@ extern const int PANEL_PACKET_SIZE;
 
 typedef struct __attribute__((packed)) {
   byte header1, header2;
-  byte analogValue, batteryLevel;
+  byte analogValue, batteryLevel, digitalMask;
   byte checksum;
 } IndicatorPacket;
 extern IndicatorPacket indicatorPacket;

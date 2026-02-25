@@ -4,5 +4,6 @@
 
 void inputInit();
 void inputUpdate();
+uint8_t getDigitalInputsMask();
 
 #endif

@@ -19,4 +19,6 @@ uint8_t getPlot3();
 // Debug serial input handler
 void telemetrySourceUpdate();
 
+uint8_t getIndicatorDigitalMask();
+void telemetrySourceUpdate();
 #endif
