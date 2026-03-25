@@ -12,4 +12,5 @@ void controlUpdate();
 // Called when an EventPacket is received
 void controlHandleEvent(byte eventId);
 
+void halOutputsInit();
 #endif

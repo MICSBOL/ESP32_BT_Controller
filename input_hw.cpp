@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "input_hw.h"
 #include "pins.h"
+#include "mcp_io.h"
 
 /* =====================================================
    INTERNAL DIGITAL MASK BUILDER (Telemetry side)
@@ -25,6 +26,7 @@ static uint8_t buildDigitalMaskInternal() {
 uint8_t buildDigitalMask() {
     uint8_t mask = 0;
 
+#if PROJECT_MODE == FULL_RC_MODE
     if (digitalRead(PIN_IND1)) mask |= (1 << 0);
     if (digitalRead(PIN_IND2)) mask |= (1 << 1);
     if (digitalRead(PIN_IND3)) mask |= (1 << 2);
@@ -33,6 +35,9 @@ uint8_t buildDigitalMask() {
     if (digitalRead(PIN_IND2)) mask |= (1 << 5);
     if (digitalRead(PIN_IND3)) mask |= (1 << 6);
     if (digitalRead(PIN_IND4)) mask |= (1 << 7);
+#elif PROJECT_MODE == FULL_RC_MODE_MCP
+    mask = mcpReadDigitalInputs();
+#endif
 
     return mask;
 }
@@ -41,10 +46,10 @@ void inputHwRead(InputRaw& out) {
 
     /* -------- Analog Inputs -------- */
 
-    out.analog1 = analogRead(PIN_ANALOG1);
-    out.analog2 = analogRead(PIN_ANALOG2);
-    out.analog3 = analogRead(PIN_ANALOG3);
-    out.analog4 = analogRead(PIN_ANALOG4);
+    out.analog1 = analogRead(PIN_NUMERIC1);
+    out.analog2 = analogRead(PIN_NUMERIC2);
+    out.analog3 = analogRead(PIN_ANALOG_IND1);
+    out.analog4 = analogRead(PIN_ANALOG_IND2);
 
     /* -------- Digital Inputs -------- */
 
@@ -78,12 +83,13 @@ void inputHwRead(InputRaw& out) {
    ===================================================== */
 
 uint16_t hwReadNumeric1() {
-    return map(analogRead(PIN_NUMERIC1), 0, 4095, 0, 9999);
+    uint32_t v = analogRead(PIN_NUMERIC1);
+    return (uint16_t)((v * 65535UL) / 4095);
 }
-
 uint16_t hwReadNumeric2() {
-    return map(analogRead(PIN_NUMERIC2), 0, 4095, 0, 9999);
-}
+    uint32_t v = analogRead(PIN_NUMERIC2);
+    return (uint16_t)((v * 65535UL) / 4095);
+}   
 
 uint8_t hwReadIndicatorAnalog() {
     return map(analogRead(PIN_ANALOG_IND1), 0, 4095, 0, 100);
@@ -94,15 +100,15 @@ uint8_t hwReadIndicatorBattery() {
 }
 
 uint8_t hwReadPlot1() {
-    return map(analogRead(PIN_ANALOG1), 0, 4095, 0, 255);
+    return map(analogRead(PIN_NUMERIC1), 0, 4095, 0, 255);
 }
 
 uint8_t hwReadPlot2() {
-    return map(analogRead(PIN_ANALOG2), 0, 4095, 0, 255);
+    return map(analogRead(PIN_NUMERIC2), 0, 4095, 0, 255);
 }
 
 uint8_t hwReadPlot3() {
-    return map(analogRead(PIN_ANALOG3), 0, 4095, 0, 255);
+    return map(analogRead(PIN_ANALOG_IND2), 0, 4095, 0, 255);
 }
 
 uint8_t hwReadDigitalMask() {

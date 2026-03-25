@@ -1,54 +1,55 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include "packets.h"
-#include "bluetooth.h"
-#include "pins.h"
 
+/* =====================================================
+   I2C ADDRESSES
+   ===================================================== */
 #define I2C_ADDR_TEMP 0x48
 #define I2C_ADDR_IMU  0x68
 
-static unsigned long lastSend = 0;
-const unsigned long i2cInterval = 100;
-
-uint16_t readTemp() {
-  Wire.beginTransmission(I2C_ADDR_TEMP);
-  Wire.write(0);
-  Wire.endTransmission();
-  Wire.requestFrom(I2C_ADDR_TEMP,2);
-  return (Wire.read()<<8)|Wire.read();
+/* =====================================================
+   INIT
+   Call this once from boardInit()
+   ===================================================== */
+void i2cSensorsInit() {
+    // Nothing special for now
+    // (IMU init could be added later if needed)
 }
 
-void readIMU(int16_t &ax,int16_t &ay,int16_t &az) {
-  Wire.beginTransmission(I2C_ADDR_IMU);
-  Wire.write(0x3B);
-  Wire.endTransmission(false);
-  Wire.requestFrom(I2C_ADDR_IMU,6);
-  ax = (Wire.read()<<8)|Wire.read();
-  ay = (Wire.read()<<8)|Wire.read();
-  az = (Wire.read()<<8)|Wire.read();
+/* =====================================================
+   READ TEMPERATURE SENSOR
+   ===================================================== */
+uint16_t i2cReadTemp() {
+
+    Wire.beginTransmission(I2C_ADDR_TEMP);
+    Wire.write(0x00);
+    if (Wire.endTransmission() != 0) return 0;
+
+    Wire.requestFrom(I2C_ADDR_TEMP, (uint8_t)2);
+
+    if (Wire.available() < 2) return 0;
+
+    uint16_t value = (Wire.read() << 8) | Wire.read();
+    return value;
 }
 
-void sendI2CTelemetry() {
-  if(!SerialBT.hasClient()) return;
-  if(millis()-lastSend<i2cInterval) return;
-  lastSend=millis();
+/* =====================================================
+   READ IMU (ACCEL ONLY)
+   Example: MPU6050
+   ===================================================== */
+void i2cReadIMU(int16_t &ax, int16_t &ay, int16_t &az) {
 
-  int16_t ax,ay,az;
+    ax = ay = az = 0;
 
-  i2cPacket.h1=0xCC;
-  i2cPacket.h2=0x66;
-  i2cPacket.temp = readTemp();
-  readIMU(ax,ay,az);
+    Wire.beginTransmission(I2C_ADDR_IMU);
+    Wire.write(0x3B);  // ACCEL_XOUT_H
+    if (Wire.endTransmission(false) != 0) return;
 
-  i2cPacket.ax=ax;
-  i2cPacket.ay=ay;
-  i2cPacket.az=az;
-  i2cPacket.sensorFlags = 0b00000011;
+    Wire.requestFrom(I2C_ADDR_IMU, (uint8_t)6);
 
-  byte c=0;
-  for(int i=2;i<I2C_PACKET_SIZE-1;i++)
-    c+=((byte*)&i2cPacket)[i];
+    if (Wire.available() < 6) return;
 
-  i2cPacket.checksum=c;
-  SerialBT.write((byte*)&i2cPacket,I2C_PACKET_SIZE);
+    ax = (Wire.read() << 8) | Wire.read();
+    ay = (Wire.read() << 8) | Wire.read();
+    az = (Wire.read() << 8) | Wire.read();
 }

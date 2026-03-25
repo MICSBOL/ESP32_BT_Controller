@@ -46,10 +46,13 @@ void telemetrySourceUpdate() {
     int comma = line.indexOf(',');
     if (comma < 0) return;
 
-    int l = line.substring(0, comma).toInt();
-    int r = line.substring(comma + 1).toInt();
+    float lf = line.substring(0, comma).toFloat();
+    float rf = line.substring(comma + 1).toFloat();
 
-    if (l >= 0 && l <= 9999 && r >= 0 && r <= 9999) {
+    uint16_t l = (uint16_t)(lf * 10.0f + 0.5f);
+    uint16_t r = (uint16_t)(rf * 10.0f + 0.5f);
+
+    if (l <= 65535 && r <= 65535) {
         dbgLeft  = l;
         dbgRight = r;
     }

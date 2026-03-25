@@ -16,29 +16,17 @@
   #define USE_TELEMETRY          0
   #define USE_I2C_SENSOR         0
 
-#elif PROJECT_MODE == MODE_MINIMAL
+#elif PROJECT_MODE == FULL_RC_MODE_MCP
 
-  #define USE_PANEL_TELEMETRY      1
-  #define USE_INDICATOR_TELEMETRY  1
-  #define USE_PLOT_TELEMETRY       0
-  #define USE_DIGITAL_INPUTS       0
-  #define USE_I2C_SENSOR           0
+  #undef USE_PWM_OUTPUTS
+  #undef USE_SWITCH_OUTPUTS
+  #undef USE_EVENT_OUTPUTS
 
-#elif PROJECT_MODE == MODE_BASIC_RC
-
-  #define USE_PANEL_TELEMETRY      1
-  #define USE_INDICATOR_TELEMETRY  1
-  #define USE_PLOT_TELEMETRY       1
-  #define USE_DIGITAL_INPUTS       1
-  #define USE_I2C_SENSOR           0
-
-#elif PROJECT_MODE == MODE_SENSOR_NODE
-
-  #define USE_PANEL_TELEMETRY      0
-  #define USE_INDICATOR_TELEMETRY  1
-  #define USE_PLOT_TELEMETRY       0
-  #define USE_DIGITAL_INPUTS       1
-  #define USE_I2C_SENSOR           1
+  #define USE_PWM_OUTPUTS        1
+  #define USE_SWITCH_OUTPUTS     1
+  #define USE_EVENT_OUTPUTS      1
+  #define USE_TELEMETRY          0
+  #define USE_I2C_SENSOR         0
 
 #endif
 

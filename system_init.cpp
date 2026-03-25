@@ -5,12 +5,10 @@
 #include "receiver.h"
 #include "debug.h"
 #include "board_init.h"
-#include "input.h"
 #include "control.h"
 #include "i2c_sensors.h"
 #include "debug_config.h"
 #include "i2c_bus.h"
-
 
 static void serialInit() {
   Serial.begin(115200);
@@ -35,8 +33,8 @@ static void bluetoothInit() {
 static void hardwareInit() {
 
   boardInit();
-
   i2cBusInit();
+  halOutputsInit();
 
 #if USE_MCP23017
   mcpInit();
@@ -57,8 +55,6 @@ void systemLoop() {
   handleBluetooth();
   sendTelemetryIfDue();
   controlUpdate();
-  inputUpdate();
-  sendI2CTelemetry();
 
 #if DBG_STICKS
   debugStickLX();

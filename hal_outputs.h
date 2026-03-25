@@ -14,3 +14,5 @@ void halSetSwitch(uint8_t index, bool state);
 
 /* Pulse Outputs */
 void halPulseSwitch(uint8_t index);
+
+void setupMotorTimer();
