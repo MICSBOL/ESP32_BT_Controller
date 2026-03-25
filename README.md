@@ -109,11 +109,8 @@ The firmware can be built in different modes. Each mode enables a different set 
 
 | Mode | Description |
 |------|-------------|
-| `MODE_FULL_RC_MCP` *(default)* | Full RC control with GPIO expander (MCP23017) |
-| `MODE_FULL_RC` | Full RC control using the ESP32 built-in pins |
-| `MODE_BASIC_RC` | Simplified RC control with basic telemetry |
-| `MODE_SENSOR_NODE` | Sensor-only mode (I2C sensors, no RC outputs) |
-| `MODE_MINIMAL` | Minimal operation – panels and indicators only |
+| `MODE_FULL_RC` *(default)* | Full RC control using the ESP32 built-in pins |
+| `MODE_FULL_RC_MCP` | Full RC control with GPIO expander (MCP23017) |
 
 The active mode is set in [`user_config.h`](user_config.h) before flashing the firmware.
 
