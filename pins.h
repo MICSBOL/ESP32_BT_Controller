@@ -95,6 +95,21 @@
 #define PIN_MD_LEFT 12   // keep LOW at boot
 #define PIN_MD_RIGHT 15   // keep LOW at boot
 
+
+/* =====================================================
+   BUTTONS PULSE OUTPUTS (4)
+   ===================================================== */
+#define PIN_PULSE1 4
+#define PIN_PULSE2 5
+#define PIN_PULSE3 13
+#define PIN_PULSE4 14
+
+/* =====================================================
+   FREE I/O OUTPUTS (2)
+   ===================================================== */
+#define PIN_FREE5 16
+#define PIN_FREE6 17
+
 /* =====================================================
    MCP23017 DIGITAL ASSIGNMENTS
    ===================================================== */
@@ -102,7 +117,6 @@
 /*
    GPA0–GPA7  → 8 Digital Indicators (INPUTS)
    GPB0–GPB5  → 6 Switch Outputs
-   GPB6–GPB7  → 2 Event Outputs
 */
 
 #define GPA0   0
@@ -123,19 +137,8 @@
 #define GPB6   6
 #define GPB7   7
 
+
 #define MCP_ADDR 0x20
-
-#define PIN_PULSE1 4
-#define PIN_PULSE2 5
-#define PIN_PULSE3 13
-#define PIN_PULSE4 14
-
-
-#define PIN_FREE5 16
-#define PIN_FREE6 17
-
-
 #endif
-
 
 #endif
