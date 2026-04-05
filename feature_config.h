@@ -4,7 +4,7 @@
 /* ==============================
    TELEMETRY MODULES
    ============================== */
-#if PROJECT_MODE == FULL_RC_MODE
+#if PROJECT_MODE == MODE_FULL_RC
 
   #undef USE_PWM_OUTPUTS
   #undef USE_SWITCH_OUTPUTS
@@ -16,7 +16,7 @@
   #define USE_TELEMETRY          0
   #define USE_I2C_SENSOR         0
 
-#elif PROJECT_MODE == FULL_RC_MODE_MCP
+#elif PROJECT_MODE == MODE_FULL_RC_MCP
 
   #undef USE_PWM_OUTPUTS
   #undef USE_SWITCH_OUTPUTS

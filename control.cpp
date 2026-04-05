@@ -53,7 +53,7 @@ void controlUpdate() {
 
 void controlHandleEvent(byte eventId) {
 
-#if PROJECT_MODE == FULL_RC_MODE
+#if PROJECT_MODE == MODE_FULL_RC
 
   switch (eventId) {
     case 0x01: halPulseSwitch(0); break;
@@ -63,7 +63,7 @@ void controlHandleEvent(byte eventId) {
     default: break;
   }
 
-#elif PROJECT_MODE == FULL_RC_MODE_MCP
+#elif PROJECT_MODE == MODE_FULL_RC_MCP
   switch (eventId) {
     case 0x01: halPulseSwitch(0); break;
     case 0x02: halPulseSwitch(1); break;

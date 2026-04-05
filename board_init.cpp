@@ -142,9 +142,9 @@ static void initFullRCMcp() {
 
 void boardInit() {
 
-#if PROJECT_MODE == FULL_RC_MODE
+#if PROJECT_MODE == MODE_FULL_RC
   initFullRC();
-#elif PROJECT_MODE == FULL_RC_MODE_MCP
+#elif PROJECT_MODE == MODE_FULL_RC_MCP
   initFullRCMcp();
 #endif
 }

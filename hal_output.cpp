@@ -114,7 +114,7 @@ void setMotorRightDirection(bool state){
 
 void halSetSwitch(uint8_t index, bool state) {
 
-#if PROJECT_MODE == FULL_RC_MODE
+#if PROJECT_MODE == MODE_FULL_RC
   const uint8_t pins[4] = {
     PIN_SW1, PIN_SW2, PIN_SW3,
     PIN_SW4
@@ -123,7 +123,7 @@ void halSetSwitch(uint8_t index, bool state) {
   if (index < 4)
     digitalWrite(pins[index], state);
 
-#elif PROJECT_MODE == FULL_RC_MODE_MCP
+#elif PROJECT_MODE == MODE_FULL_RC_MCP
   const uint8_t mcpPins[6] = {
     GPB0_SW1, GPB1_SW2, GPB2_SW3,
     GPB3_SW4, GPB4_SW5, GPB5_SW6
@@ -138,7 +138,7 @@ void halSetSwitch(uint8_t index, bool state) {
 
 void halPulseSwitch(uint8_t index) {
 
-#if PROJECT_MODE == FULL_RC_MODE
+#if PROJECT_MODE == MODE_FULL_RC
   const uint8_t gpioPulsePins[2] = { PIN_PULSE1, PIN_PULSE2 };
 
   if (index < 2)
