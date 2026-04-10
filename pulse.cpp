@@ -35,35 +35,3 @@ void pulseUpdate() {
     gpioPulse.active = false;
   }
 }
-
-/* =====================================================
-   MCP NON-BLOCKING PULSE
-   ===================================================== */
-
-#if USE_MCP23017
-
-static PulseState mcpPulse = {false, 0, 0, 0};
-
-void mcpPulseStart(uint8_t pin, uint16_t durationMs) {
-
-  if (mcpPulse.active) return;
-
-  mcpWriteOutput(pin, HIGH);
-
-  mcpPulse.active = true;
-  mcpPulse.pin = pin;
-  mcpPulse.startTime = millis();
-  mcpPulse.duration = durationMs;
-}
-
-void mcpPulseUpdate() {
-
-  if (!mcpPulse.active) return;
-
-  if (millis() - mcpPulse.startTime >= mcpPulse.duration) {
-    mcpWriteOutput(mcpPulse.pin, LOW);
-    mcpPulse.active = false;
-  }
-}
-
-#endif

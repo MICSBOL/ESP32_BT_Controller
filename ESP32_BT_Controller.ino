@@ -8,8 +8,4 @@ void setup() {
 void loop() {
   systemLoop();
   pulseUpdate();
-
-#if USE_MCP23017
-  mcpPulseUpdate();
-#endif
 }
