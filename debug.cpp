@@ -27,7 +27,7 @@ static uint16_t lastKnobR = 0;
 
 static uint8_t lastEventId = 0;
 
-static byte lastSwitches = 0xFF;
+static byte lastSwitches = 0x00;
 static uint8_t lastEventIdPrint = 0;
 /* ---------- STICKS ---------- */
 #if DBG_STICKS

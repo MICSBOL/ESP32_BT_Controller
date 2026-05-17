@@ -33,7 +33,7 @@ static void initFullRC() {
   /* ================= PWM OUTPUTS (6) ================= */
 
   const uint32_t pwmFreq = 20000;
-  const uint8_t  pwmRes  = 12;
+  const uint8_t  pwmRes  = 11;
 
   ledcAttach(PIN_PWM_STICK_LX, pwmFreq, pwmRes);
   ledcAttach(PIN_PWM_STICK_LY, pwmFreq, pwmRes);
@@ -92,7 +92,7 @@ static void initFullRCMcp() {
   /* ================= PWM OUTPUTS (6) ================= */
 
   const uint32_t pwmFreq = 20000;
-  const uint8_t  pwmRes  = 12;
+  const uint8_t  pwmRes  = 11;
 
   ledcAttach(PIN_PWM_STICK_LX, pwmFreq, pwmRes);
   ledcAttach(PIN_PWM_STICK_LY, pwmFreq, pwmRes);
