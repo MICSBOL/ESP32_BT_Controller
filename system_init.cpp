@@ -25,8 +25,6 @@ static void bluetoothInit() {
 
 #if DEBUG_ENABLED
   Serial.println("ESP32 Bluetooth Receiver Ready.");
-  Serial.printf("Listening for State (%d) and Event (%d)\n",
-                STATE_PACKET_SIZE, EVENT_PACKET_SIZE);
 #endif
 }
 
